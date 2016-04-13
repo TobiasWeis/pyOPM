@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1574</width>
+    <height>1108</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>pyOPM</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>1571</width>
+      <height>1081</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="0" column="0">
+      <widget class="QTabWidget" name="tabWidget">
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Tab 1</string>
+        </attribute>
+        <widget class="QGraphicsView" name="graphicsView">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>190</y>
+           <width>1261</width>
+           <height>611</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QTextEdit" name="textEdit">
+         <property name="geometry">
+          <rect>
+           <x>290</x>
+           <y>20</y>
+           <width>1101</width>
+           <height>121</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButton">
+         <property name="geometry">
+          <rect>
+           <x>1430</x>
+           <y>20</y>
+           <width>95</width>
+           <height>131</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>PushButton</string>
+         </property>
+        </widget>
+        <widget class="QTextEdit" name="text_node">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>280</y>
+           <width>231</width>
+           <height>31</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="radio_obj">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>330</y>
+           <width>110</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Object</string>
+         </property>
+        </widget>
+        <widget class="QRadioButton" name="radio_proc">
+         <property name="geometry">
+          <rect>
+           <x>140</x>
+           <y>330</y>
+           <width>110</width>
+           <height>26</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Process</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="btn_add">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>370</y>
+           <width>231</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Add</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="tab_2">
+        <attribute name="title">
+         <string>Tab 2</string>
+        </attribute>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1574</width>
+     <height>27</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>btn_add</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>btn_add_clicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>140</x>
+     <y>451</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>235</x>
+     <y>27</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>btn_add_clicked()</slot>
+ </slots>
+</ui>

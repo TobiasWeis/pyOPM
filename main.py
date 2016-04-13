@@ -1,0 +1,187 @@
+#!/usr/bin/python -W ignore::DeprecationWarning
+import sys
+
+import os
+import glob
+import random
+import cv2
+import numpy as np
+import datetime
+
+from PyQt4 import QtCore, QtGui, uic
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
+
+from node import *
+from edge import *
+
+qtCreatorFile = "mainwindow.ui" # Enter file here.
+
+Ui_MainWindow, QtBaseClass = uic.loadUiType(qtCreatorFile)
+
+class MyApp(QtGui.QMainWindow, Ui_MainWindow):
+    def __init__(self, argv):
+
+        QtGui.QMainWindow.__init__(self)
+        Ui_MainWindow.__init__(self)
+        self.setupUi(self)
+
+        # graph stuff
+        self.scene = QGraphicsScene()
+        self.graphicsView.setScene(self.scene)
+        view = self.graphicsView
+        view.setRenderHint(QPainter.Antialiasing)
+
+        self.newnodeidx = 0
+        self.newedgeidx = 0
+        self.newconnectionidx = 0
+
+        self.isConnecting = False
+
+        # FIXME: remove in production version
+        self.insertTestStuff() # insert some test nodes and connections
+
+        view.show()
+
+    def insertTestStuff(self):
+        # add a node
+        self.nodes = {}
+        self.edges = []
+        self.connections = {}
+
+        # sample nodes, objects + processes
+        idx_v = self.addNode(0,0,'object', 'Video')
+        idx_t = self.addNode(150,0,'process', 'Threshold')
+        idx_m = self.addNode(300,0,'object', 'Map')
+
+        # sample connections
+        self.connectNodes(idx_v, idx_t, 'hollow-arrow')
+        self.connectNodes(idx_t, idx_m, 'filled-arrow')
+
+        self.updatePaths()
+
+
+    def btn_add_clicked(self):
+        '''
+        button to add nodes manually
+        '''
+        # get text for node
+        name = self.text_node.toPlainText()
+        if self.radio_obj.isChecked() or self.radio_proc.isChecked():
+            if self.radio_obj.isChecked():
+                type = 'object'
+            else:
+                type = 'process'
+            self.addNode(0,0,type,name)
+        else:
+            print "Error: please check a radio-box to select type!"
+
+
+    def connect(self, index):
+        '''
+        called from a node if its connect function is triggered,
+        makes connection if second node's connect function is triggered
+        '''
+        if self.isConnecting == False:
+            self.firstNode = index
+            self.isConnecting = True
+        else:
+            self.connectNodes(self.firstNode, index, 'hollow-circle')
+            print "Connected !"
+            self.isConnecting = False
+
+    def connectNodes(self, idx_node1, idx_node2, edgetype):
+        self.connections[self.newconnectionidx] = {}
+        self.connections[self.newconnectionidx]["indices"] = [idx_node1, idx_node2]
+        self.connections[self.newconnectionidx]["edgeidx"] = -1
+        self.connections[self.newconnectionidx]["edgetype"] = edgetype
+        self.newconnectionidx += 1
+        self.updatePaths()
+
+    def removeConnection(self, idx_connection):
+        '''
+        find the connection with right pathid, and remove it from the dict
+        '''
+        for key in self.connections:
+            if self.connections[key]["edgeidx"] == idx_connection:
+                del self.connections[key]
+                break
+        self.updatePaths()
+
+    def updatePaths(self):
+        '''
+        redraws edges
+        - if any of the nodes is moved
+        - if connections are added or deleted
+        '''
+        # clear existing edges from scene
+        for key in self.edges:
+            self.scene.removeItem(self.edges[key])
+
+        # add fresh edges between nodes
+        self.edges = {}
+        for key in self.connections:
+            c = self.connections[key]["indices"]
+            pos = self.nodes[c[0]].pos()
+            npos = self.nodes[c[1]].pos()
+
+            start_x = pos.x()
+            end_x = npos.x() 
+
+            start_y = pos.y()
+            end_y = npos.y() 
+
+            if npos.x() > pos.x():
+                start_x = pos.x() + self.nodes[c[0]].boundingRect().width() 
+                end_x = npos.x() 
+            elif npos.x() < pos.x():
+                start_x = pos.x() 
+                end_x = npos.x() + self.nodes[c[1]].boundingRect().width() 
+
+            start_y = pos.y() + self.nodes[c[0]].boundingRect().height() / 2
+            end_y = npos.y() + self.nodes[c[1]].boundingRect().height() / 2
+
+            p1 = Edge(QPointF(start_x, start_y), QPointF(end_x,end_y), self, self.newedgeidx, self.connections[key]["edgetype"])
+            self.scene.addItem(p1)
+            self.edges[self.newedgeidx] = p1
+
+            self.connections[key]["edgeidx"] = self.newedgeidx
+
+            self.newedgeidx += 1
+
+        self.scene.update()
+
+    def addNode(self,x,y,type,name):
+        node = Node(self.newnodeidx, name, type, self)
+        node.setPos(x,y)
+        self.scene.addItem(node)
+        self.nodes[self.newnodeidx] = node
+        self.scene.update()
+
+        self.newnodeidx += 1
+        return self.newnodeidx-1 # return id of inserted node
+
+
+    def keyPressEvent(self, e):
+        if e.key() == QtCore.Qt.Key_Escape:
+            self.close()
+        if e.key() == QtCore.Qt.Key_F:
+            self.fwd_clicked()
+        if e.key() == QtCore.Qt.Key_B:
+            self.bwd_clicked()
+        if e.key() == QtCore.Qt.Key_P:
+            if self.play == False:
+                self.timer.setInterval(1)
+                self.timer.timeout.connect(self.fwd_clicked)
+                self.timer.start()
+                self.play = True
+            else:
+                self.timer.stop()
+                self.play = False
+
+
+if __name__ == "__main__":
+    app = QtGui.QApplication(sys.argv)
+    window = MyApp(sys.argv)
+    window.show()
+    sys.exit(app.exec_())
