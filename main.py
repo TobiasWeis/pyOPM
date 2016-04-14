@@ -29,8 +29,8 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         # graph stuff
         self.scene = QGraphicsScene()
         self.graphicsView.setScene(self.scene)
-        view = self.graphicsView
-        view.setRenderHint(QPainter.Antialiasing)
+        self.view = self.graphicsView
+        self.view.setRenderHint(QPainter.Antialiasing)
 
         self.newnodeidx = 0
         self.newedgeidx = 0
@@ -41,7 +41,18 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         # FIXME: remove in production version
         self.insertTestStuff() # insert some test nodes and connections
 
-        view.show()
+        self.view.show()
+
+
+    def scaleView(self, scaleFac) :
+        factor = self.view.matrix().scale(scaleFac, scaleFac).mapRect(QRectF(0, 0, 1, 1)).width();
+        if (factor < 0.07 or factor > 100):
+             return
+        self.view.scale(scaleFac, scaleFac)
+          
+    def wheelEvent(self, event):
+        self.scaleView(pow(2., -event.delta() / 240.0));
+
 
     def insertTestStuff(self):
         # add a node
