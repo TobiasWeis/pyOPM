@@ -35,9 +35,25 @@ class Edge(QGraphicsItem):
         print "No no hover"
 
     def contextMenuEvent(self,event):
-        self.parent.removeConnection(self.index)
-        print "Removing!"
+        # FIXME: need to encode types of edges (related to semantics of OPM)
+        actions = ["delete", "filled-arrow", "hollow-arrow"]
+        menu = QMenu()
+        for a in actions:
+            menu.addAction(a)
 
+        a = menu.exec_(event.screenPos())
+
+        idx = actions.index(a.text())
+        if idx == 0: # delete
+            print "Removing"
+            self.parent.removeConnection(self.index)
+        elif idx == 1: # change type to filled-arrow
+            self.type = "filled-arrow"
+            self.parent.connections[self.index]["edgetype"] = 'filled-arrow'
+            self.parent.updatePaths()
+        elif idx == 2: # change type to hollow-arrow
+            self.parent.connections[self.index]["edgetype"] = 'hollow-arrow'
+            self.parent.updatePaths()
 
     def type(self):
         return Edge.Type

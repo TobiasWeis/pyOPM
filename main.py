@@ -65,11 +65,23 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         idx_t = self.addNode(150,0,'process', 'Threshold')
         idx_m = self.addNode(300,0,'object', 'Map')
 
+
         # sample connections
+        # FIXME: need to encode types of edges (related to semantics of OPM)
         self.connectNodes(idx_v, idx_t, 'hollow-arrow')
         self.connectNodes(idx_t, idx_m, 'filled-arrow')
 
         self.updatePaths()
+
+
+    def updateNodes(self):
+        model = QStandardItemModel(self.list_overview_nodes)
+        for key in self.nodes:
+            # add node to list_overview_nodes
+            item = QStandardItem(self.nodes[key].name)
+            model.appendRow(item)
+        self.list_overview_nodes.setModel(model)
+        self.list_overview_nodes.show()
 
 
     def btn_add_clicked(self):
@@ -104,7 +116,6 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
     def connectNodes(self, idx_node1, idx_node2, edgetype):
         self.connections[self.newconnectionidx] = {}
         self.connections[self.newconnectionidx]["indices"] = [idx_node1, idx_node2]
-        self.connections[self.newconnectionidx]["edgeidx"] = -1
         self.connections[self.newconnectionidx]["edgetype"] = edgetype
         self.newconnectionidx += 1
         self.updatePaths()
@@ -113,10 +124,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         '''
         find the connection with right pathid, and remove it from the dict
         '''
-        for key in self.connections:
-            if self.connections[key]["edgeidx"] == idx_connection:
-                del self.connections[key]
-                break
+        del self.connections[idx_connection]
         self.updatePaths()
 
     def updatePaths(self):
@@ -129,10 +137,15 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         for key in self.edges:
             self.scene.removeItem(self.edges[key])
 
+        model = QStandardItemModel(self.list_overview_connections)
         # add fresh edges between nodes
         self.edges = {}
         for key in self.connections:
             c = self.connections[key]["indices"]
+
+            item = QStandardItem(self.nodes[c[0]].name + " -> " + self.nodes[c[1]].name)
+            model.appendRow(item)
+
             pos = self.nodes[c[0]].pos()
             npos = self.nodes[c[1]].pos()
 
@@ -152,15 +165,15 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
             start_y = pos.y() + self.nodes[c[0]].boundingRect().height() / 2
             end_y = npos.y() + self.nodes[c[1]].boundingRect().height() / 2
 
-            p1 = Edge(QPointF(start_x, start_y), QPointF(end_x,end_y), self, self.newedgeidx, self.connections[key]["edgetype"])
+            p1 = Edge(QPointF(start_x, start_y), QPointF(end_x,end_y), self, key, self.connections[key]["edgetype"])
+            self.edges[key] = p1
             self.scene.addItem(p1)
-            self.edges[self.newedgeidx] = p1
-
-            self.connections[key]["edgeidx"] = self.newedgeidx
-
-            self.newedgeidx += 1
 
         self.scene.update()
+
+        self.list_overview_connections.setModel(model)
+        self.list_overview_connections.show()
+
 
     def addNode(self,x,y,type,name):
         node = Node(self.newnodeidx, name, type, self)
@@ -168,6 +181,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
         self.scene.addItem(node)
         self.nodes[self.newnodeidx] = node
         self.scene.update()
+        self.updateNodes()
 
         self.newnodeidx += 1
         return self.newnodeidx-1 # return id of inserted node
