@@ -8,13 +8,14 @@ class Edge(QGraphicsItem):
 
     Type = QGraphicsItem.UserType + 2
 
-    def __init__(self, sourceNode, destNode, parent, index, type):
+    def __init__(self, sourceNode, destNode, parent, index, type, tag=""):
         super(Edge, self).__init__()
 
         self.arrowSize = 10.0
         self.sourcePoint = QPointF()
         self.destPoint = QPointF()
         self.type = type
+        self.tag = tag
 
         #self.setAcceptedMouseButtons(Qt.NoButton)
         self.setAcceptHoverEvents(True)
@@ -34,9 +35,16 @@ class Edge(QGraphicsItem):
         self.hover = False
         print "No no hover"
 
+
+    def showDialog(self):
+        text, ok = QInputDialog.getText(self.parent, "QInputDialog.getText()","Tag:", QLineEdit.Normal, "")
+        if ok:
+            self.parent.connections[self.index]["tag"] = text
+            self.tag = text
+
     def contextMenuEvent(self,event):
         # FIXME: need to encode types of edges (related to semantics of OPM)
-        actions = ["delete", "filled-arrow", "hollow-arrow"]
+        actions = ["delete", "tag", "filled-arrow", "hollow-arrow", "null-structural", "hollow-circle"]
         menu = QMenu()
         for a in actions:
             menu.addAction(a)
@@ -47,12 +55,12 @@ class Edge(QGraphicsItem):
         if idx == 0: # delete
             print "Removing"
             self.parent.removeConnection(self.index)
-        elif idx == 1: # change type to filled-arrow
-            self.type = "filled-arrow"
-            self.parent.connections[self.index]["edgetype"] = 'filled-arrow'
-            self.parent.updatePaths()
-        elif idx == 2: # change type to hollow-arrow
-            self.parent.connections[self.index]["edgetype"] = 'hollow-arrow'
+        elif idx == 1: # tag
+            print "Tagging"
+            self.showDialog()
+        else:
+            self.type = actions[idx]
+            self.parent.connections[self.index]["edgetype"] = actions[idx]
             self.parent.updatePaths()
 
     def type(self):
@@ -133,9 +141,18 @@ class Edge(QGraphicsItem):
             destArrowP2 = self.destPoint + QPointF(math.sin(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize, math.cos(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize)
             painter.setBrush(Qt.black)
             painter.drawPolygon(QPolygonF([line.p2(), destArrowP1, destArrowP2]))
+        elif self.type == 'null-structural':
+            destArrowP1 = self.destPoint + QPointF(math.sin(angle - Edge.Pi / 3) * self.arrowSize, math.cos(angle - Edge.Pi / 3) * self.arrowSize)
+            destArrowP2 = self.destPoint + QPointF(math.sin(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize, math.cos(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize)
+            painter.setBrush(Qt.white)
+            painter.drawLine(QLineF(line.p2(), destArrowP1))
+            painter.drawLine(QLineF(line.p2(), destArrowP2))
         elif self.type == 'hollow-circle':
             painter.setBrush(Qt.white)
             painter.drawEllipse(self.destPoint, 5, 5);
+
+        if self.tag != "":
+            painter.drawText(self.boundingRect().x() + self.boundingRect().width()/2. , self.boundingRect().y() + self.boundingRect().height()/2., self.tag)
 
         self.parent.scene.update()
 

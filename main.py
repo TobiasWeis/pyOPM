@@ -113,10 +113,11 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
             print "Connected !"
             self.isConnecting = False
 
-    def connectNodes(self, idx_node1, idx_node2, edgetype):
+    def connectNodes(self, idx_node1, idx_node2, edgetype, tag=""):
         self.connections[self.newconnectionidx] = {}
         self.connections[self.newconnectionidx]["indices"] = [idx_node1, idx_node2]
         self.connections[self.newconnectionidx]["edgetype"] = edgetype
+        self.connections[self.newconnectionidx]["tag"] = tag
         self.newconnectionidx += 1
         self.updatePaths()
 
@@ -165,7 +166,7 @@ class MyApp(QtGui.QMainWindow, Ui_MainWindow):
             start_y = pos.y() + self.nodes[c[0]].boundingRect().height() / 2
             end_y = npos.y() + self.nodes[c[1]].boundingRect().height() / 2
 
-            p1 = Edge(QPointF(start_x, start_y), QPointF(end_x,end_y), self, key, self.connections[key]["edgetype"])
+            p1 = Edge(QPointF(start_x, start_y), QPointF(end_x,end_y), self, key, self.connections[key]["edgetype"], self.connections[key]["tag"])
             self.edges[key] = p1
             self.scene.addItem(p1)
 
