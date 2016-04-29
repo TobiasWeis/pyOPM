@@ -44,7 +44,7 @@ class Edge(QGraphicsItem):
 
     def contextMenuEvent(self,event):
         # FIXME: need to encode types of edges (related to semantics of OPM)
-        actions = ["delete", "tag", "filled-arrow", "hollow-arrow", "null-structural", "hollow-circle"]
+        actions = ["delete", "tag", "filled-arrow", "hollow-arrow", "structural", "bi-directional", "hollow-circle"]
         menu = QMenu()
         for a in actions:
             menu.addAction(a)
@@ -147,6 +147,14 @@ class Edge(QGraphicsItem):
             painter.setBrush(Qt.white)
             painter.drawLine(QLineF(line.p2(), destArrowP1))
             painter.drawLine(QLineF(line.p2(), destArrowP2))
+        elif self.type == 'bi-directional':
+            destArrowP1 = self.destPoint + QPointF(math.sin(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize, math.cos(angle - Edge.Pi + Edge.Pi / 3) * self.arrowSize)
+            destArrowP2 = self.sourcePoint + QPointF(math.sin(angle + Edge.Pi/3) * self.arrowSize, math.cos(angle + Edge.Pi/3) * self.arrowSize)
+
+            painter.setBrush(Qt.white)
+            painter.drawLine(QLineF(line.p2(), destArrowP1))
+            painter.drawLine(QLineF(line.p1(), destArrowP2))
+
         elif self.type == 'hollow-circle':
             painter.setBrush(Qt.white)
             painter.drawEllipse(self.destPoint, 5, 5);
